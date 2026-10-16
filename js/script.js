@@ -1,3 +1,4 @@
+
 /* ============================================================
    AirCapots One · script.js
    Cada parte del equipo trabaja SOLO dentro de su bloque.
@@ -60,16 +61,184 @@ function initColorPicker() {
   }));
 }
 
-/* ---------- PARTE 2 · Fondo + animación propia ---------- */
+/* ============================================================
+   PARTE 2 · FONDO + ANIMACIÓN PROPIA
+   ============================================================ */
+
+/* ---------- ANIMACIÓN 1: FONDO ---------- */
+
 function initBackground() {
-  // TODO: animar .bg__blob--l y .bg__blob--r (deriva suave, escala, opacidad) con onFrame(dt, t).
-  // Usar transform; el color ya cambia solo vía --accent. Respetar `reducedMotion`.
+
+  const blobL = $(".bg__blob--l");
+  const blobR = $(".bg__blob--r");
+
+  // Verificar elementos y respetar movimiento reducido.
+  if (!blobL || !blobR || reducedMotion) return;
+
+  onFrame((dt, t) => {
+
+    // Movimiento suave del fondo izquierdo.
+    const xL = Math.sin(t * 0.25) * 12;
+    const yL = Math.cos(t * 0.20) * 10;
+
+    const scaleL =
+      1 + Math.sin(t * 0.18) * 0.035;
+
+    const opacityL =
+      0.20 + Math.sin(t * 0.22) * 0.025;
+
+    blobL.style.transform =
+      `translate3d(${xL}px, ${yL}px, 0) scale(${scaleL})`;
+
+    blobL.style.opacity = opacityL.toFixed(3);
+
+
+    // Movimiento independiente del fondo derecho.
+    const xR = Math.cos(t * 0.22) * 14;
+    const yR = Math.sin(t * 0.18) * 12;
+
+    const scaleR =
+      1 + Math.cos(t * 0.16) * 0.04;
+
+    const opacityR =
+      0.20 + Math.cos(t * 0.20) * 0.025;
+
+    blobR.style.transform =
+      `translate3d(${xR}px, ${yR}px, 0) scale(${scaleR})`;
+
+    blobR.style.opacity = opacityR.toFixed(3);
+
+  });
 }
+
+
+/* ---------- ANIMACIÓN 2: PRODUCTO CON SCROLL ---------- */
+
 function initScrollProduct() {
-  // TODO (animación propia, 15 % de la nota): con state.scrollY mover/rotar el
-  // producto del hero: setVar("--py", ...) y setVar("--rot", ...) sobre #product.
-  // Ejemplo de referencia: y = 0.3 * scrollY.  Diseñar su propia fórmula.
+
+  const product = $("#product");
+  const hero = $(".hero");
+
+  if (!product || !hero) return;
+
+  // Desactivar animación si el usuario lo solicita.
+  if (reducedMotion) {
+    setVar("--py", "0px", product);
+    setVar("--rot", "0deg", product);
+    return;
+  }
+
+  // Valores interpolados del producto.
+  let currentY = 0;
+  let currentRot = 0;
+
+  // Posición y recorrido disponible.
+  let heroStart = 0;
+  let scrollRange = 1;
+  let maxY = 0;
+
+  function calculateLimits() {
+
+    const heroRect = hero.getBoundingClientRect();
+
+    heroStart = heroRect.top + window.scrollY;
+
+    // Usamos el 65 % de la altura del hero.
+    // Así el movimiento termina antes.
+    scrollRange = Math.max(
+      1,
+      hero.offsetHeight * 0.65
+    );
+
+    // Distancia máxima deseada: 25px.
+    // Se reduce automáticamente si no hay espacio.
+    const stage = product.closest(".stage");
+
+    if (stage) {
+
+      const heroBottom =
+        hero.getBoundingClientRect().bottom + window.scrollY;
+
+      const productBottom =
+        product.getBoundingClientRect().bottom +
+        window.scrollY -
+        currentY;
+
+      // Reservamos 24px de seguridad.
+      const availableSpace = Math.max(
+        0,
+        heroBottom - productBottom - 24
+      );
+
+      // Nunca superar el espacio disponible.
+      maxY = Math.min(25, availableSpace);
+
+    } else {
+      maxY = 0;
+    }
+  }
+
+  calculateLimits();
+
+  // Actualizar límites cuando cambie la pantalla.
+  addEventListener("resize", calculateLimits);
+
+  // Recalcular cuando carguen las imágenes.
+  addEventListener("load", calculateLimits);
+
+  onFrame((dt) => {
+
+    // Progreso limitado entre 0 y 1.
+    const p = clamp(
+      (state.scrollY - heroStart) / scrollRange,
+      0,
+      1
+    );
+
+    // Fórmula de suavizado Smoothstep.
+    const smooth =
+      p * p * (3 - 2 * p);
+
+    // Desplazamiento vertical limitado.
+    const targetY =
+      maxY * smooth;
+
+    // Rotación máxima de 2 grados.
+    const targetRot =
+      2 * Math.sin((Math.PI * p) / 2);
+
+    // Factor de interpolación independiente de FPS.
+    const smoothing =
+      1 - Math.exp(-8 * dt);
+
+    currentY = lerp(
+      currentY,
+      targetY,
+      smoothing
+    );
+
+    currentRot = lerp(
+      currentRot,
+      targetRot,
+      smoothing
+    );
+
+    // Aplicar exclusivamente al producto del hero.
+    setVar(
+      "--py",
+      `${currentY.toFixed(2)}px`,
+      product
+    );
+
+    setVar(
+      "--rot",
+      `${currentRot.toFixed(2)}deg`,
+      product
+    );
+
+  });
 }
+
 
 /* ---------- PARTE 3 · Eventos, scroll y entrada ---------- */
 function initCursorGlow() {
