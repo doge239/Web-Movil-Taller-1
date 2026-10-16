@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AirCapots One · El sonido tiene una nueva forma</title>
+  <meta name="description" content="AirCapots One: audífonos minimalistas con audio espacial, cancelación activa y seis colores.">
+  <link rel="icon" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- HOOK PARTE 2: fondo animado (manchas de luz que usan --accent) -->
+  <div class="bg" aria-hidden="true">
+    <span class="bg__blob bg__blob--l"></span>
+    <span class="bg__blob bg__blob--r"></span>
+  </div>
+  <!-- HOOK PARTE 3: halo que sigue al cursor -->
+  <div id="cursor-glow" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#inicio"><img src="assets/logo.png" alt="" class="brand__logo"> AirCapots</a>
+    <button class="nav-toggle" aria-expanded="false" aria-controls="menu">Menú</button>
+    <nav id="menu" class="menu">
+      <a href="#diseno">Diseño</a>
+      <a href="#sonido">Sonido</a>
+      <a href="#colores">Colores</a>
+      <a class="pill pill--sm menu__cta" href="#colores">Explorar ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section id="inicio" class="hero">
+      <p class="eyebrow" data-intro>Presentamos AirCapots One</p>
+      <h1 class="hero__title">
+        <span data-intro>El sonido tiene</span>
+        <span class="soft" data-intro>una nueva forma.</span>
+      </h1>
+      <p class="hero__lead" data-intro>Minimalismo que se siente. Audio que te transporta.</p>
+      <a class="pill" href="#diseno" data-intro>Descubre la experiencia ↗</a>
+
+      <!-- HOOK PARTE 2 (scroll) y PARTE 3 (tilt con mouse/touch) -->
+      <div class="stage" id="product">
+        <img class="product-img" id="hero-img" src="assets/gris.png" alt="AirCapots One en gris espacial">
+        <span class="stage__shadow" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <!-- ============ DISEÑO ============ -->
+    <section id="diseno" class="section">
+      <h2 class="section__title" data-reveal>Diseñados para desaparecer.</h2>
+      <div class="cols">
+        <article data-reveal><h3>Aluminio y malla</h3><p>Casquetes de aluminio anodizado y almohadillas de malla que respiran durante horas.</p></article>
+        <article data-reveal><h3>Diadema sin presión</h3><p>Un arco de malla elástica reparte el peso para que olvides que lo llevas puesto.</p></article>
+        <article data-reveal><h3>Una corona, un gesto</h3><p>Un solo dial controla volumen, pausa y llamadas. Sin menús, sin ruido.</p></article>
+      </div>
+    </section>
+
+    <!-- ============ SONIDO ============ -->
+    <section id="sonido" class="section section--sound">
+      <h2 class="section__title" data-reveal>Audio que te <span class="soft">transporta.</span></h2>
+      <dl class="stats">
+        <div data-reveal><dd>40 mm</dd><dt>Drivers dinámicos</dt></div>
+        <div data-reveal><dd>20 h</dd><dt>Batería con cancelación activa</dt></div>
+        <div data-reveal><dd>3D</dd><dt>Audio espacial con seguimiento de cabeza</dt></div>
+      </dl>
+    </section>
+
+    <!-- ============ COLORES ============ -->
+    <section id="colores" class="section section--colors">
+      <h2 class="section__title" data-reveal>Seis colores. <span class="soft">Uno es tuyo.</span></h2>
+      <div class="stage stage--colors">
+        <img class="product-img" id="color-img" src="assets/azul.png" alt="AirCapots One en azul cielo">
+        <span class="stage__shadow" aria-hidden="true"></span>
+      </div>
+      <p class="color-name" id="color-name" aria-live="polite">Azul cielo</p>
+      <!-- HOOK PARTE 3: la transición entre colores se anima en initColorPicker -->
+      <div class="swatches" role="group" aria-label="Elegir color">
+        <button class="swatch" style="--c:#6f9bd1" data-name="Azul cielo" data-src="assets/azul.png" aria-pressed="true" aria-label="Azul cielo"></button>
+        <button class="swatch" style="--c:#f1f1f4" data-name="Blanco" data-src="assets/blanco.png" aria-pressed="false" aria-label="Blanco"></button>
+        <button class="swatch" style="--c:#4b4b52" data-name="Gris espacial" data-src="assets/gris.png" aria-pressed="false" aria-label="Gris espacial"></button>
+        <button class="swatch" style="--c:#ee6a5f" data-name="Coral" data-src="assets/coral.png" aria-pressed="false" aria-label="Coral"></button>
+        <button class="swatch" style="--c:#9fcaa9" data-name="Verde" data-src="assets/verde.png" aria-pressed="false" aria-label="Verde"></button>
+        <button class="swatch" style="--c:#c9cacf" data-name="Plata" data-src="assets/plata.png" aria-pressed="false" aria-label="Plata"></button>
+      </div>
+      <!-- HOOK PARTE 3: animación al clic -->
+      <button class="pill" id="cta-btn" type="button">Reservar AirCapots One ↗</button>
+    </section>
+  </main>
+
+  <footer class="footer"><p>AirCapots One · Producto ficticio · Taller 1 Web Móvil</p></footer>
+  <script src="js/script.js"></script>
+</body>
+</html>

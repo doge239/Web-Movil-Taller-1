@@ -1,0 +1,102 @@
+/* ===== 1. TOKENS (identidad minimalista; cambiar aquí cambia todo el sitio) ===== */
+:root {
+  --bg: #fafafa;
+  --ink: #1a1a1d;
+  --ink-soft: #8e9098;
+  --line: #e7e7ea;
+  --accent: #6f9bd1;            /* color elegido; lo cambia JS */
+  --font: "DM Sans", system-ui, sans-serif;
+  --space: clamp(1.2rem, 5vw, 2.5rem);
+  --maxw: 1040px;
+
+  /* Variables que escriben las partes 2 y 3 desde JS */
+  --py: 0px;       /* desplazamiento vertical del producto (scroll) */
+  --rot: 0deg;     /* rotación del producto (scroll) */
+  --tilt-x: 0deg;  /* inclinación con mouse/touch */
+  --tilt-y: 0deg;
+}
+
+/* ===== 2. BASE ===== */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: var(--font); line-height: 1.55; color: var(--ink); background: var(--bg); overflow-x: hidden; }
+h1, h2, h3 { margin: 0; letter-spacing: -.04em; line-height: 1.02; }
+p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.soft { color: var(--ink-soft); }
+main, .topbar, .footer { position: relative; z-index: 2; }
+#cursor-glow { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+/* Las imágenes tienen fondo blanco: multiply lo funde con la página */
+.product-img, .brand__logo { mix-blend-mode: multiply; }
+
+/* ===== 3. FONDO (estático; la Parte 2 lo anima) ===== */
+.bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.bg__blob { position: absolute; width: 46vmax; height: 46vmax; border-radius: 50%; background: radial-gradient(circle, var(--accent), transparent 68%); opacity: .22; filter: blur(30px); transition: background 1s; }
+.bg__blob--l { left: -22vmax; top: 30vh; }
+.bg__blob--r { right: -22vmax; top: 10vh; }
+
+/* ===== 4. NAV ===== */
+.topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: .8rem var(--space); background: rgba(250, 250, 250, .75); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: .6rem; font-weight: 700; text-decoration: none; letter-spacing: -.02em; }
+.brand__logo { height: 26px; width: auto; }
+.menu { display: flex; align-items: center; gap: 2rem; font-size: .9rem; }
+.menu a { text-decoration: none; color: var(--ink-soft); transition: color .2s; }
+.menu a:hover { color: var(--ink); }
+.nav-toggle { display: none; }
+
+/* ===== 5. BOTÓN ===== */
+.pill { display: inline-block; padding: .95rem 1.7rem; border: 0; border-radius: 999px; cursor: pointer; font: 500 .95rem var(--font); text-decoration: none; color: #fff; background: var(--ink); box-shadow: 0 10px 24px rgba(26, 26, 29, .18); transition: transform .25s, box-shadow .25s; }
+.pill:hover { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(26, 26, 29, .25); }
+.pill--sm { padding: .55rem 1.1rem; font-size: .85rem; }
+.menu a.pill { color: #fff; }
+
+/* ===== 6. HERO ===== */
+.hero { min-height: 100svh; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 7.5rem var(--space) 0; overflow: hidden; }
+.eyebrow { font-size: .72rem; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 1.4rem; }
+.hero__title { font-size: clamp(2.8rem, 9vw, 6.6rem); font-weight: 700; }
+.hero__title span { display: block; }
+.hero__lead { margin: 1.6rem 0 2rem; font-size: clamp(1rem, 2.2vw, 1.2rem); color: var(--ink-soft); }
+
+.stage { position: relative; width: min(88vw, 440px); margin-top: 2.5rem; }
+.product-img { display: block; width: 100%; height: auto; transform: translateY(var(--py)) rotate(var(--rot)) perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)); will-change: transform; }
+.stage__shadow { position: absolute; left: 12%; right: 12%; bottom: 2%; height: 8%; background: radial-gradient(ellipse, rgba(26, 26, 29, .22), transparent 70%); z-index: -1; }
+
+/* ===== 7. SECCIONES ===== */
+.section { max-width: var(--maxw); margin: 0 auto; padding: clamp(5rem, 14vw, 9rem) var(--space); }
+.section__title { font-size: clamp(2rem, 6vw, 4rem); font-weight: 700; max-width: 14ch; margin-bottom: 3.5rem; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space); }
+.cols article { border-top: 1px solid var(--ink); padding-top: 1.2rem; }
+.cols h3 { font-size: 1.3rem; margin-bottom: .6rem; }
+.cols p { color: var(--ink-soft); }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space); margin: 0; }
+.stats dd { margin: 0; font-size: clamp(2.4rem, 7vw, 5rem); font-weight: 700; letter-spacing: -.05em; line-height: 1; }
+.stats dt { margin-top: .6rem; color: var(--ink-soft); max-width: 22ch; }
+
+.section--colors { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.section--colors .section__title { max-width: none; margin-bottom: 1rem; }
+.stage--colors { width: min(86vw, 420px); margin-top: 0; }
+.color-name { font-size: 1.2rem; font-weight: 500; margin: 1rem 0 1.2rem; min-height: 1.6em; }
+.swatches { display: flex; gap: .9rem; margin-bottom: 2.5rem; }
+.swatch { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; background: var(--c); border: 1px solid rgba(0, 0, 0, .12); transition: transform .2s, box-shadow .2s; }
+.swatch:hover { transform: scale(1.12); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--ink); }
+.footer { text-align: center; padding: 2rem var(--space); color: var(--ink-soft); font-size: .85rem; border-top: 1px solid var(--line); }
+
+/* ===== 8. RESPONSIVE ===== */
+@media (max-width: 800px) {
+  .cols, .stats { grid-template-columns: 1fr; gap: 2.2rem; }
+  .nav-toggle { display: block; background: none; border: 1px solid var(--line); border-radius: 999px; padding: .4rem .9rem; font: inherit; color: var(--ink); }
+  .menu { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; background: rgba(250, 250, 250, .97); border-bottom: 1px solid var(--line); }
+  .menu.is-open { display: flex; }
+  .menu a { padding: 1rem var(--space); }
+  .menu a.pill { margin: .5rem var(--space) 1rem; text-align: center; }
+}
+
+/* ===== 9. ACCESIBILIDAD ===== */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
