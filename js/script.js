@@ -78,14 +78,14 @@ function initBackground() {
   onFrame((dt, t) => {
 
     // Movimiento suave del fondo izquierdo.
-    const xL = Math.sin(t * 0.25) * 12;
-    const yL = Math.cos(t * 0.20) * 10;
+    const xL = Math.sin(t * 0.25) * 40;
+    const yL = Math.cos(t * 0.20) * 30;
 
     const scaleL =
-      1 + Math.sin(t * 0.18) * 0.035;
+      1 + Math.sin(t * 0.18) * 0.08;
 
     const opacityL =
-      0.20 + Math.sin(t * 0.22) * 0.025;
+      0.20 + Math.sin(t * 0.22) * 0.06;
 
     blobL.style.transform =
       `translate3d(${xL}px, ${yL}px, 0) scale(${scaleL})`;
@@ -94,14 +94,14 @@ function initBackground() {
 
 
     // Movimiento independiente del fondo derecho.
-    const xR = Math.cos(t * 0.22) * 14;
-    const yR = Math.sin(t * 0.18) * 12;
+    const xR = Math.cos(t * 0.22) * 40;
+    const yR = Math.sin(t * 0.18) * 30;
 
     const scaleR =
-      1 + Math.cos(t * 0.16) * 0.04;
+      1 + Math.cos(t * 0.16) * 0.08;
 
     const opacityR =
-      0.20 + Math.cos(t * 0.20) * 0.025;
+      0.20 + Math.cos(t * 0.20) * 0.06;
 
     blobR.style.transform =
       `translate3d(${xR}px, ${yR}px, 0) scale(${scaleR})`;
@@ -203,9 +203,9 @@ function initScrollProduct() {
     const targetY =
       maxY * smooth;
 
-    // Rotación máxima de 2 grados.
+    // Rotación máxima de 5 grados.
     const targetRot =
-      2 * Math.sin((Math.PI * p) / 2);
+      5 * Math.sin((Math.PI * p) / 2);
 
     // Factor de interpolación independiente de FPS.
     const smoothing =
@@ -241,15 +241,132 @@ function initScrollProduct() {
 
 
 /* ---------- PARTE 3 · Eventos, scroll y entrada ---------- */
+
+//Glow del cursor: circulo que sigue al mouse con retraso
 function initCursorGlow() {
-  // TODO: #cursor-glow sigue a state.mouseX / state.mouseY con lerp (desactivar si isTouch).
+  const glow = $("#cursor-glow");
+  if (!glow || isTouch || reducedMotion) return;
+
+  // Posición actual del halo (parte donde está el mouse).
+  let x = state.mouseX;
+  let y = state.mouseY;
+
+  // Aparece con el primer movimiento y se oculta al salir de la ventana.
+  addEventListener("pointermove", () => glow.classList.add("is-active"), { passive: true });
+  document.documentElement.addEventListener("mouseleave", () => glow.classList.remove("is-active"));
+
+  onFrame((dt) => {
+    // Factor de suavizado independiente. Mientras mayor el número, más rápido alcanza al mouse.
+    const k = 1 - Math.exp(-6 * dt);
+
+    // lerp: En cada cuadro, glow recorre k de la distancia que lo separa del mouse.
+    x = lerp(x, state.mouseX, k);
+    y = lerp(y, state.mouseY, k);
+
+    glow.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+  });
 }
+
+//Product tilt: el audífono se inclina hacia el mouse (o el dedo)
 function initProductTilt() {
-  // TODO: inclinar #product con --tilt-x / --tilt-y según el mouse (o el touch).
+  const product = $("#product");
+
+  if (!product || reducedMotion) return;
+
+  const MAX_TILT = 12;   // inclinación máxima en grados
+  let tiltX = 0;         // valores actuales
+  let tiltY = 0;
+
+  // Solo se inclina si hay un puntero activo
+  // Mouse: siempre que esté dentro de la ventana. Touch: solo mientras se arrastra sobre el producto.
+  let tracking = false;
+
+  addEventListener("pointermove", (e) => {
+    if (e.pointerType === "mouse") tracking = true;
+  }, { passive: true });
+
+  document.documentElement.addEventListener("mouseleave", () => { tracking = false; });
+
+  product.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "mouse") tracking = true;
+  });
+
+  const release = (e) => { if (e.pointerType !== "mouse") tracking = false; };
+  addEventListener("pointerup", release);
+  addEventListener("pointercancel", release);
+
+  onFrame((dt) => {
+    let targetX = 0;
+    let targetY = 0;
+
+    if (tracking) {
+      // Posición del puntero respecto al centro del producto, normalizada entre -1 y 1.
+      const r = product.getBoundingClientRect();
+      const dx = (state.mouseX - (r.left + r.width / 2)) / (state.width / 2);
+      const dy = (state.mouseY - (r.top + r.height / 2)) / (state.height / 2);
+
+      // Puntero a la derecha: gira en Y. Puntero arriba: gira en X.
+      targetY = clamp(dx, -1, 1) * MAX_TILT;
+      targetX = -clamp(dy, -1, 1) * MAX_TILT;
+    }
+    // Si no hay puntero, los objetivos son 0 y el producto vuelve solo a su posición.
+
+    const k = 1 - Math.exp(-8 * dt);
+    tiltX = lerp(tiltX, targetX, k);
+    tiltY = lerp(tiltY, targetY, k);
+
+    // Se escribe solo sobre #product (no sobre :root), así no afecta a la imagen de Colores.
+    setVar("--tilt-x", `${tiltX.toFixed(2)}deg`, product);
+    setVar("--tilt-y", `${tiltY.toFixed(2)}deg`, product);
+  });
 }
+
+/* Scroll reveal, los bloques aparecen al llegar a la pantalla */
 function initScrollReveal() {
-  // TODO: animar cada [data-reveal] al entrar en pantalla (IntersectionObserver).
+  const items = $$("[data-reveal]");
+
+  // Con movimiento reducido o sin IntersectionObserver no se oculta nada
+  if (!items.length || reducedMotion || !("IntersectionObserver" in window)) return;
+
+  // Los elementos que comparten contenedor aparecen uno tras otro.
+  const grupos = new Map();
+  items.forEach((el) => {
+    const lista = grupos.get(el.parentElement) || [];
+    lista.push(el);
+    grupos.set(el.parentElement, lista);
+  });
+  grupos.forEach((lista) => {
+    lista.forEach((el, i) => el.style.setProperty("--reveal-delay", `${i * 120}ms`));
+  });
+
+  document.body.classList.add("reveal-ready");
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      const el = entry.target;
+
+      // Revela si entra en pantalla o si ya quedó por encima
+      if (!entry.isIntersecting && entry.boundingClientRect.top >= 0) return;
+
+      el.classList.add("is-visible");
+      observer.unobserve(el);   // solo se anima una vez
+
+      // Al terminar la animación se quita el atributo
+      el.addEventListener("transitionend", (e) => {
+        if (e.propertyName === "transform") {
+          el.removeAttribute("data-reveal");
+          el.style.removeProperty("--reveal-delay");
+        }
+      });
+    });
+  }, {
+    threshold: 0.15,                 // basta con ver un 15% del elemento
+    rootMargin: "0px 0px -8% 0px",   // y que haya pasado un poco del borde inferior
+  });
+
+  items.forEach((el) => observer.observe(el));
 }
+
 function initIntro() {
   // TODO: entrada escalonada de los [data-intro] del hero al cargar.
 }

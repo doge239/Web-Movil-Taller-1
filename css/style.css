@@ -99,7 +99,10 @@ a {
    3. CAPAS DE LA PÁGINA
    ------------------------------------------------------------ */
 
-main,
+main {
+  position: relative;
+  z-index: auto;
+} 
 .topbar,
 .footer {
   position: relative;
@@ -369,7 +372,7 @@ main,
 
   width: 100%;
   height: auto;
-
+/* Se aplica la transformación de movimiento y rotación */
   transform:
     translateY(var(--py))
     rotate(var(--rot))
@@ -695,7 +698,7 @@ main,
   --rot: 0deg;
 }
 
-#product.product-img {
+#product .product-img {
   will-change: transform;
 
   transform-origin: center center;
@@ -737,7 +740,7 @@ main,
 
   /* Producto */
 
-  #product.product-img {
+  #product .product-img {
     backface-visibility: hidden;
   }
 
@@ -782,11 +785,52 @@ main,
    PARTE 3 · INTERACCIONES Y MOVIMIENTO
 
    Espacio reservado para el integrante encargado.
-
-   - Cursor glow
-   - Product tilt
-   - Scroll reveal
-   - Intro escalonada
-   - Animación del botón CTA
-   - Transición entre colores
    ============================================================ */
+
+/* Cursor glow */
+#cursor-glow {
+  /* z-index 0 para que quedd sobre el fondo pero detrás del contenido */
+  z-index: 0;
+
+  width: 380px;
+  height: 380px;
+
+  /* Centra el halo en el cursor */
+  margin: -190px 0 0 -190px;
+
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent), transparent 65%);
+
+  opacity: 0;
+  transition: opacity 0.5s, background 1s;
+  will-change: transform;
+}
+
+#cursor-glow.is-active {
+  opacity: 0.2;
+}
+
+/* Permite arrastrar horizontalmente para inclinar sin bloquear el scroll vertical */
+#product {
+  touch-action: pan-y;
+}
+
+/*Scroll reveal, los bloques aparecen al llegar a la pantalla */
+/* Estado inicial, ocultos y desplazados hacia abajo */
+.reveal-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity 0.8s ease var(--reveal-delay, 0ms),
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--reveal-delay, 0ms);
+}
+
+/* Estado final, el JS agrega .is-visible al entrar en pantalla */
+.reveal-ready [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/*   - Intro escalonada
+   - Animación del botón CTA
+   - Transición entre colores*/
