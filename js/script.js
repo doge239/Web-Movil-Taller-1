@@ -51,13 +51,35 @@ function initColorPicker() {
   const img = $("#color-img");
   const label = $("#color-name");
   const swatches = $$(".swatch");
+  let token = 0;
   swatches.forEach((s) => { new Image().src = s.dataset.src; }); // precarga
   swatches.forEach((s) => s.addEventListener("click", () => {
     swatches.forEach((o) => o.setAttribute("aria-pressed", String(o === s)));
-    img.src = s.dataset.src;
-    img.alt = `AirCapots One en ${s.dataset.name.toLowerCase()}`;
-    label.textContent = s.dataset.name;
+    const swap = () => {
+      img.src = s.dataset.src;
+      img.alt = `AirCapots One en ${s.dataset.name.toLowerCase()}`;
+      label.textContent = s.dataset.name;
+    };
     setVar("--accent", getComputedStyle(s).getPropertyValue("--c")); // tiñe el fondo
+    //if (s.getAttribute("aria-pressed") === "true") return;
+    if (reducedMotion) { swap(); return; } //Desactiva la animación si el usuario pidió movimiento reducido
+    const mine = ++token;
+
+    //1) Fade-out
+    img.classList.add("is-fading");
+    label.classList.add("is-fading");
+
+    //2) Al terminar el Fade-out, se cambia la imagen y se hace Fade-in
+    setTimeout(() => {
+      if (mine !== token) return;
+      swap();
+      const show = () => {
+        if (mine !== token) return;
+        img.classList.remove("is-fading");
+        label.classList.remove("is-fading");
+      };
+      img.decode().then(show, show); //Espera a que la nueva imagen esté lista para evitar parpadeos
+    }, 150);
   }));
 }
 
@@ -368,10 +390,49 @@ function initScrollReveal() {
 }
 
 function initIntro() {
-  // TODO: entrada escalonada de los [data-intro] del hero al cargar.
+  const items = $$("[data-intro]");
+  if (!items.length || reducedMotion) return;
+  items.forEach((el, i) => el.style.setProperty("--intro-delay", `${100 + i * 120}ms`));
+
+  // Estado inicial y final
+  document.body.classList.add("intro-ready");
+  void document.body.offsetWidth;   // fuerza el reflow para que arranque la transición
+  requestAnimationFrame(() => {
+    items.forEach((el) => {
+      el.classList.add("is-in");
+
+      // Al terminar se limpia
+      el.addEventListener("transitionend", (e) => {
+        if (e.propertyName !== "translate") return;
+        el.removeAttribute("data-intro");
+        el.classList.remove("is-in");
+        el.style.removeProperty("--intro-delay");
+      });
+    });
+  });
 }
+
 function initCtaClick() {
-  // TODO: animación al hacer clic en #cta-btn. Además: animar el cambio de color en initColorPicker.
+  const btn = $("#cta-btn");
+  if (!btn) return;
+
+  let pulse = null;
+
+  btn.addEventListener("click", () => {
+    btn.textContent = "¡Reservado!";
+
+    if (reducedMotion) return; // Reinicia el pulso si se clickea varias veces seguidas
+    if (pulse) pulse.cancel(); // Se usa la propiedad scale para no chocar a product-img
+    pulse = btn.animate(
+      [
+        { scale: 1,    boxShadow: "0 10px 24px rgba(26, 26, 29, 0.18), 0 0 0 0 rgba(26, 26, 29, 0.35)" },
+        { scale: 0.94, offset: 0.2 },
+        { scale: 1.08, offset: 0.5, boxShadow: "0 16px 30px rgba(26, 26, 29, 0.25), 0 0 0 0 rgba(26, 26, 29, 0.25)" },
+        { scale: 1,    boxShadow: "0 10px 24px rgba(26, 26, 29, 0.18), 0 0 0 18px rgba(26, 26, 29, 0)" },
+      ],
+      { duration: 600, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" }
+    );
+  });
 }
 
 /* ---------- ARRANQUE ---------- */
